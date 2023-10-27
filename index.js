@@ -1,34 +1,22 @@
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
-import axios from 'axios';
-import {auth} from './firebase-service';
+const serviceAccount = require("./serviceAccountKey");
+import {auth} from './firebaseCredentials';
 const express = require('express');
 const bodyParser = require('body-parser');
 const router = express.Router();
 const auth = require('./middleware/auth');
-const authController = require('./controllers/authController.json')
+const authController = require('./controllers/authController')
 const app = express();
 const db = require('./queries');
 const port = 3000;
 
-import * as admin from 'firebase-admin';
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-
-export const createUserAccount = (data) => {
-  return axios.post('https:// /auth/signup', data)
-    .then(res => res.data)
-}
-
-
-export const loginUser = (email, password) => {
-  return auth().signInWithEmailAndPassword(email, password);
-}
-
-  
+ 
 app.use(bodyParser.json());
 
 app.use(

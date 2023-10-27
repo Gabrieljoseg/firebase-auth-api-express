@@ -1,4 +1,5 @@
 import admin from './firebase-service';
+
 const getAuthToken = (req, res, next) => {
   if (
     req.headers.authorization &&
