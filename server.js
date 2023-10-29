@@ -1,5 +1,4 @@
 const express = require('express');
-const admin = require('firebase-admin');
 const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } = require("firebase/auth");
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
@@ -12,8 +11,6 @@ const serviceAccount = require('./serviceAccountKey.json');
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
-
-const SECRET = 'sua_chave_secreta_aqui';
 
 app.get('/', (req, res) => {
   res.json({ info: 'API de autenticação com Node.js, Express e Firebase' });
