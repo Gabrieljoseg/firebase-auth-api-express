@@ -1,32 +1,48 @@
 const express = require('express');
+const { initializeApp } = require ("firebase/app");
 const { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } = require("firebase/auth");
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const db = require('./queries.js');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+const admin = require('firebase-admin');
 const serviceAccount = require('./serviceAccountKey.json');
+
+require('dotenv').config();
+const firebaseConfig = {
+  apiKey: process.env.FIREBASE_API_KEY,
+  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.FIREBASE_PROJECT_ID,
+  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.FIREBASE_APP_ID,
+};
+
+// Initialize Firebase
+const firebaseApp = initializeApp(firebaseConfig);
+
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
+
 });
 
 app.get('/', (req, res) => {
   res.json({ info: 'API de autenticação com Node.js, Express e Firebase' });
 });
 
+const SECRET = process.env.FIREBASE_API_KEY;
 // Rota para criar um novo usuário
 app.post('/signup', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const auth = getAuth();
-    createUserWithEmailAndPassword(auth, email, password)
-  .then((userCredential) => {
-    // Signed in 
-    const user = userCredential.user;
-    // ...
-  })
+    const auth = getAuth(firebaseApp);
+    
+    await createUserWithEmailAndPassword(auth, email, password);
+    
     res.status(200).json({
       statusCode: 200,
       message: 'Usuário criado com sucesso!',
@@ -44,21 +60,40 @@ app.post('/signup', async (req, res) => {
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
-    const auth = getAuth();
+    const auth = getAuth(firebaseApp);
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
 
-    // Gere um token JWT
-    const token = jwt.sign({ uid: user.uid }, SECRET, {
-      expiresIn: '2h', // Token expira em 2 horas
-    });
+    // Verifique se o usuário é um administrador
+    const adminRef = admin.database().ref('admins');
+    adminRef.child(user.uid).get().then((snapshot) => {
+      if (snapshot.exists() && snapshot.val() === true) {
+        // O usuário é um administrador
+        const token = jwt.sign({ uid: user.uid, isAdmin: true }, SECRET, {
+          expiresIn: '2h',
+        });
 
-    res.status(200).json({
-      statusCode: 200,
-      message: 'Login realizado com sucesso!',
-      data: {
-        token,
-      },
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Login realizado com sucesso!',
+          data: {
+            token,
+          },
+        });
+      } else {
+        // O usuário não é um administrador
+        const token = jwt.sign({ uid: user.uid, isAdmin: false }, SECRET, {
+          expiresIn: '2h',
+        });
+
+        res.status(200).json({
+          statusCode: 200,
+          message: 'Login realizado com sucesso!',
+          data: {
+            token,
+          },
+        });
+      }
     });
   } catch (error) {
     console.error('Erro ao fazer login:', error);
@@ -112,6 +147,21 @@ app.get('/rotaAutenticada', verificarToken, (req, res) => {
     },
   });
 });
+
+// Rota para listar todos os currículos
+app.get('/curriculos', verificarToken, db.getCurriculos);
+
+// Rota para obter um currículo por nome
+app.get('/curriculos/pessoa/:nome', verificarToken, db.getCurriculoByNome);
+
+// Rota para criar um currículo
+app.post('/curriculos', verificarToken, db.createCurriculo);
+
+// Rota para atualizar um currículo por ID
+app.put('/curriculos/:id', verificarToken, db.updateCurriculo);
+
+// Rota para excluir um currículo por ID
+app.delete('/curriculos/:id', verificarToken, db.deleteCurriculo);
 
 // Servidor na porta 3000
 const PORT = process.env.PORT || 3000;
