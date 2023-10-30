@@ -27,7 +27,7 @@ const firebaseApp = initializeApp(firebaseConfig);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-
+  databaseURL: process.env.FIREBASE_DATABASE_URL
 });
 
 app.get('/', (req, res) => {
@@ -94,7 +94,7 @@ app.post('/login', async (req, res) => {
     const user = userCredential.user;
 
     // Verifique se o usuário é um administrador
-    const adminRef = admin.database().ref('admins');
+    const adminRef = admin.database().ref('admin');
     adminRef.child(user.uid).get().then((snapshot) => {
       if (snapshot.exists() && snapshot.val() === true) {
         // O usuário é um administrador

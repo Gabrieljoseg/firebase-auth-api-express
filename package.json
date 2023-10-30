@@ -1,8 +1,8 @@
 {
-  "name": "api-rest-curriculo",
+  "name": "api-rest-curriculo-authenticada",
   "version": "1.0.0",
   "description": "API REST para curriculo construida em Node+Express, com Postgresql",
-  "main": "server./js",
+  "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
