@@ -31,8 +31,41 @@ admin.initializeApp({
 });
 
 app.get('/', (req, res) => {
-  res.json({ info: 'API de autenticação com Node.js, Express e Firebase' });
+  res.json({
+    info: 'API de autenticação com Node.js, Express e Firebase',
+    routes: {
+      '/v1/signup': {
+        method: 'POST',
+        description: 'Criar um novo usuário',
+      },
+      '/v1/login': {
+        method: 'POST',
+        description: 'Fazer login e obter um token JWT',
+      },
+      '/v1/admin': {
+        method: 'GET',
+        description: 'Rota protegida para administradores',
+      },
+      '/v1/curriculos': {
+        method: 'GET',
+        description: 'Listar todos os currículos',
+      },
+      '/v1/curriculos/pessoa/:nome': {
+        method: 'GET',
+        description: 'Obter um currículo por nome',
+      },
+      '/v1/curriculos/:id': {
+        method: 'PUT',
+        description: 'Atualizar um currículo por ID',
+      },
+      '/curriculos/:id': {
+        method: 'DELETE',
+        description: 'Excluir um currículo por ID',
+      },
+    },
+  });
 });
+
 
 const SECRET = process.env.FIREBASE_API_KEY;
 // Rota para criar um novo usuário
@@ -72,10 +105,11 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign({ uid: user.uid, isAdmin: true }, SECRET, {
           expiresIn: '2h',
         });
-
+        
+        res.redirect('/admin');
         res.status(200).json({
           statusCode: 200,
-          message: 'Login realizado com sucesso!',
+          message: 'Bem vindo a área de administração',
           data: {
             token,
           },
@@ -88,7 +122,7 @@ app.post('/login', async (req, res) => {
 
         res.status(200).json({
           statusCode: 200,
-          message: 'Login realizado com sucesso!',
+          message: 'Login realizado com sucesso! Você é um usuário com permissão de Viewer. Fale com o seu administrador para alterar sua permissão',
           data: {
             token,
           },
@@ -129,7 +163,18 @@ const verificarToken = (req, res, next) => {
   }
 };
 
-app.get('/rotaApenasAdmin', verificarToken, (req, res) => {
+const verificarAdmin = (req, res, next) => {
+  if (req.userData.isAdmin) {
+    next(); // O usuário é um administrador, permita o acesso.
+  } else {
+    res.status(403).json({
+      statusCode: 403,
+      message: 'Acesso proibido! Você não é um administrador.',
+    });
+  }
+};
+
+app.get('/admin', verificarToken, verificarAdmin, (req, res) => {
   // Apenas administradores podem acessar esta rota
   res.status(200).json({
     statusCode: 200,
@@ -137,16 +182,6 @@ app.get('/rotaApenasAdmin', verificarToken, (req, res) => {
   });
 });
 
-// Rota protegida que requer token JWT
-app.get('/rotaAutenticada', verificarToken, (req, res) => {
-  res.status(200).json({
-    statusCode: 200,
-    message: 'Rota protegida: acesso permitido!',
-    data: {
-      uid: req.uid,
-    },
-  });
-});
 
 // Rota para listar todos os currículos
 app.get('/curriculos', verificarToken, db.getCurriculos);
