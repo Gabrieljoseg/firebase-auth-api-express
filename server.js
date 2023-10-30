@@ -42,11 +42,7 @@ app.get('/', (req, res) => {
         method: 'POST',
         description: 'Fazer login e obter um token JWT',
       },
-      '/v1/admin': {
-        method: 'GET',
-        description: 'Rota protegida para administradores',
-      },
-      '/v1/curriculos': {
+        '/v1/curriculos': {
         method: 'GET',
         description: 'Listar todos os currículos',
       },
