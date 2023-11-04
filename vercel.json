@@ -1,9 +1,16 @@
 {
     "version": 2,
     "builds": [
+<<<<<<< HEAD
       { "src": "/server.js", "use": "@vercel/node" }
     ],
     "routes": [
       { "src": "/(.*)", "dest": "/server.js" }
+=======
+      { "src": "/index.js", "use": "@vercel/node" }
+    ],
+    "routes": [
+      { "src": "/(.*)", "dest": "/index.js" }
+>>>>>>> 48c679e0 (commit-jotaesse)
     ]
   }

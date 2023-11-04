@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Documentação da API de Autenticação com Node.js, Express e Firebase
 
 Este documento fornece uma visão geral do código da API de autenticação com Node.js, Express e Firebase.
@@ -75,3 +76,6 @@ Este documento fornece uma visão geral do código da API de autenticação com 
 
 Este documento fornece uma visão geral do código da API de autenticação com Node.js, Express e Firebase. Consulte o código-fonte para obter detalhes completos.
 
+=======
+# api-REST-curriculo
+>>>>>>> 48c679e0 (commit-jotaesse)
